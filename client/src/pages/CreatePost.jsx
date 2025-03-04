@@ -16,10 +16,10 @@ const CreatePost = () => {
   const [loading, setLoading] = useState(false);
 
   const generateImage = async () => {
-    if(form.prompt) {
+    if (form.prompt) {
       try {
         setGeneratingImg(true);
-        const response = await fetch('https://dall-e-m7c8.onrender.com/api/v1/dalle', {
+        const response = await fetch('http://localhost:8080/api/v1/dalle', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -28,8 +28,9 @@ const CreatePost = () => {
         })
 
         const data = await response.json();
+        console.log(data);
 
-        setForm({ ...form, photo: 'data:image/jpeg;base64,${data.photo}'})
+        setForm({ ...form, photo: data.photo })
       } catch (error) {
         alert(error);
       } finally {
@@ -43,7 +44,7 @@ const CreatePost = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if(form.prompt && form.photo) {
+    if (form.prompt && form.photo) {
       setLoading(true);
 
       try {
@@ -84,7 +85,7 @@ const CreatePost = () => {
 
       <form className="mt-16 max-w-3x1" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-5">
-          <FormField 
+          <FormField
             LabelName="Your Name"
             type="text"
             name="name"
@@ -92,7 +93,7 @@ const CreatePost = () => {
             value={form.name}
             handleChange={handleChange}
           />
-          <FormField 
+          <FormField
             LabelName="Prompt"
             type="text"
             name="prompt"
@@ -110,7 +111,7 @@ const CreatePost = () => {
                 alt={form.prompt}
                 className="w-full h-full object-contain"
               />
-            ): (
+            ) : (
               <img
                 src={preview}
                 alt="preview"

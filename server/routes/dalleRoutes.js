@@ -1,38 +1,52 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
-import { Configuration, OpenAIApi } from 'openai';
+import fs from "node:fs";
+import axios from "axios";
+import FormData from "form-data";
 
 dotenv.config();
 
 const router = express.Router();
 
-const configuration = new Configuration({
-    apiKey: process.env.OPENAI_API_KEY,
-})
-
-const openai = new OpenAIApi(configuration);
-
-router.route('/').get((req, res) => {
+router.get('/', (req, res) => {
     res.send('Hello from DALL-E!');
 });
 
-router.route('/').post(async (req, res) => {
+router.post('/', async (req, res) => {
     try {
         const { prompt } = req.body;
 
-        const aiResponse = await openai.createImage({
-            prompt,
-            n: 1,
-            size: '1024x1024',
-            response_format: 'b64_json',
-        });
+        const payload = {
+            prompt: prompt,
+            output_format: "webp"
+        }
 
-        const image = aiResponse.data.data[0].b64_json;
-        res.status(200).json({ photo: image });
+        const response = await axios.postForm(
+            `https://api.stability.ai/v2beta/stable-image/generate/core`,
+            axios.toFormData(payload, new FormData()),
+            {
+                validateStatus: undefined,
+                responseType: "arraybuffer",
+                headers: {
+                    Authorization: `Bearer ${process.env.DREAMDIFFUSION_API_KEY}`,
+                    Accept: "image/*"
+                },
+            },
+        );
+
+        if (response.status === 200) {
+            fs.writeFileSync("./public/image.webp", Buffer.from(response.data));
+        } else {
+            throw new Error(`${response.status}: ${response.data.toString()}`);
+        }
+
+        const base64Image = `data:image/webp;base64,${Buffer.from(response.data).toString("base64")}`;
+
+        res.status(200).json({ photo: base64Image });
     } catch (error) {
-        console.log(error);
-        res.status(500).send(error?.response.data.error.message || 'Something went wrong');
+        console.error(error);
+        res.status(500).send(error?.message || 'Something went wrong');
     }
-})
+});
 
 export default router;

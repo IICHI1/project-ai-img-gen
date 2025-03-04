@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Loader, Card, FormField } from '../components';
 
 const RenderCards = ({ data, title }) => {
-  if(data?.length > 0) { 
+  if (data?.length > 0) {
     return data.map((post) => <Card key={post._id} {...post} />)
   }
 
@@ -23,14 +23,14 @@ const Home = () => {
       setLoading(true);
 
       try {
-        const response = await fetch('https://dall-e-m7c8.onrender.com/api/v1/post', {
+        const response = await fetch('http://localhost:8080/api/v1/post', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
         })
 
-        if(response.ok) {
+        if (response.ok) {
           const result = await response.json();
 
           setAllPosts(result.data.reverse());
@@ -52,7 +52,7 @@ const Home = () => {
     setSearchTimeout(
       setTimeout(() => {
         const searchResults = allPosts.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()) || item.prompt.toLowerCase().includes(searchText.toLowerCase()));
-  
+
         setSearchedResults(searchResults);
       }, 500)
     );
@@ -66,7 +66,7 @@ const Home = () => {
       </div>
 
       <div className="mt-16">
-        <FormField 
+        <FormField
           LabelName="Search Posts"
           type="text"
           name="text"
@@ -79,7 +79,7 @@ const Home = () => {
       <div className="mt-10">
         {Loading ? (
           <div className="flex justify-center items-center">
-          <Loader />
+            <Loader />
           </div>
         ) : (
           <>
@@ -95,10 +95,10 @@ const Home = () => {
                   title="No search results found"
                 />
               ) : (
-                <RenderCards 
+                <RenderCards
                   data={allPosts}
                   title="No posts found"
-                /> 
+                />
               )}
             </div>
           </>
